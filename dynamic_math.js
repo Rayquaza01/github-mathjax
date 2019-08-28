@@ -1,19 +1,36 @@
+let $ = q => document.querySelector(q);
+
 function render_preview() {
-    $(".js-preview-tab").on("click", function(e) {
-        function didLoadPreview() {
-            if (!$(".js-preview-tab").hasClass('selected')) {
+    // .preview is the button to switch to the preview tab
+    // .js-code-editor is the parent of both the preview content and the code editor.
+    // It's classes tell if the preview is loaded or not.
+    // #readme is the preview content
+
+    $(".preview").addEventListener("click", () => {
+        let didLoadPreview = () => {
+            // if preview is not selected, do not load
+            if (!$(".preview").classList.contains("selected")) {
                 return;
             }
-            if ($(".preview-content").attr('display') == 'none') {
+            // if preview is not loaded, wait 200ms and try again
+            if (!$(".js-code-editor").classList.contains("show-preview")) {
                 setTimeout(didLoadPreview, 200);
+            } else {
+                // format #readme element when preview is loaded
+                window.MathJax.Hub.Queue(
+                    ["Typeset", window.MathJax.Hub],
+                    $("#readme")
+                );
             }
-            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub], $(".preview-content")[0]);
-        }
+        };
         setTimeout(didLoadPreview, 200);
     });
 }
-render_preview();
-document.addEventListener("pjax:end", function(){
+
+// reformat when page loads dynamically
+document.addEventListener("pjax:end", () => {
     window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
     render_preview();
 });
+
+render_preview();
